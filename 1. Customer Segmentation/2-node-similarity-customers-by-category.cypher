@@ -1,0 +1,2 @@
+//2. node similarity: customers by category
+CALL gds.nodeSimilarity.mutate('Customer_Similarity_Graph_Category', {mutateRelationshipType:'Similar', mutateProperty:'score',topK:10, similarityCutoff:0.25})

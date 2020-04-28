@@ -1,0 +1,2 @@
+//7. Louvain stream
+CALL gds.louvain.stream('Customer_Similarity_Graph_Items',{relationshipTypes:['Similar'], relationshipWeightProperty:'score'}) YIELD nodeId, communityId RETURN communityId, count(nodeId) as size ORDER by size DESC
