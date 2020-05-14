@@ -60,7 +60,7 @@ LOAD CSV WITH HEADERS FROM "file:///customer-item.csv" as row
 WITH toInteger(row.NumberPurchased) as NumberPurchase, toInteger(row.CustomerID) as CustomerID, tointeger (row.StockCode) as StockCode
 MATCH (c:Customer{CustomerID:CustomerID})
 MATCH (i:Item {StockCode:StockCode})
-MERGE (c)-[:BOUGHT{Quantity:NumberPurchase}]->(i)
+MERGE (c)-[:BOUGHT{Quantity:NumberPurchase}]->(i);
 
 :auto
 USING PERIODIC COMMIT 500
@@ -68,4 +68,4 @@ LOAD CSV WITH HEADERS FROM "file:///transaction-item.csv" as row
 WITH tointeger (row.StockCode) as StockCode, toFloat(row.Price) as Price, toInteger(row.Transaction_ID) as TransactionID, toInteger(row.Quantity) as Quantity
 MATCH (i:Item{StockCode:StockCode})
 MATCH (t:Transaction{TransactionID:TransactionID})
-MERGE (t)-[:CONTAINS{Quantity:Quantity, Price:Price}]->(i)
+MERGE (t)-[:CONTAINS{Quantity:Quantity, Price:Price}]->(i);
