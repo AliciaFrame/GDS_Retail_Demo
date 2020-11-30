@@ -30,7 +30,6 @@ MERGE (t:Transaction{TransactionID:TransactionID, InvoiceDate:InvoiceDate, Epoch
 RETURN COUNT (t);
 
 //Add relationships
-:auto
 USING PERIODIC COMMIT 500
 LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/AliciaFrame/GDS_Retail_Demo/master/Data/item-category.csv" as row
 WITH toInteger (row.StockCode) as StockCode, row.CATEGORY as Category
@@ -38,7 +37,6 @@ MATCH (i:Item{StockCode:StockCode})
 MATCH (c:Category{Category:Category})
 MERGE (i)-[:TYPE]->(c);
 
-:auto
 USING PERIODIC COMMIT 500
 LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/AliciaFrame/GDS_Retail_Demo/master/Data/household-transaction.csv" as row
 WITH toInteger(row.CustomerID) as CustomerID, toInteger(row.Transaction_ID) as TransactionID
@@ -46,7 +44,6 @@ MATCH (c:Customer{CustomerID:CustomerID})
 MATCH (t:Transaction{TransactionID:TransactionID})
 MERGE (c)-[:MADE_TRANSACTION]->(t);
 
-:auto
 USING PERIODIC COMMIT 500
 LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/AliciaFrame/GDS_Retail_Demo/master/Data/household-country.csv" as row
 WITH toInteger(row.CustomerID) as CustomerID, row.Country as Country
@@ -54,7 +51,6 @@ MATCH (c:Customer{CustomerID:CustomerID})
 MATCH (c2:Country{Country:Country})
 MERGE (c)-[:FROM]->(c2);
 
-:auto
 USING PERIODIC COMMIT 500
 LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/AliciaFrame/GDS_Retail_Demo/master/Data/customer-item.csv" as row
 WITH toInteger(row.NumberPurchased) as NumberPurchase, toInteger(row.CustomerID) as CustomerID, tointeger (row.StockCode) as StockCode
@@ -62,10 +58,15 @@ MATCH (c:Customer{CustomerID:CustomerID})
 MATCH (i:Item {StockCode:StockCode})
 MERGE (c)-[:BOUGHT{Quantity:NumberPurchase}]->(i);
 
-:auto
 USING PERIODIC COMMIT 500
 LOAD CSV WITH HEADERS FROM "https://raw.githubusercontent.com/AliciaFrame/GDS_Retail_Demo/master/Data/transaction-item.csv" as row
 WITH tointeger (row.StockCode) as StockCode, toFloat(row.Price) as Price, toInteger(row.Transaction_ID) as TransactionID, toInteger(row.Quantity) as Quantity
 MATCH (i:Item{StockCode:StockCode})
 MATCH (t:Transaction{TransactionID:TransactionID})
 MERGE (t)-[:CONTAINS{Quantity:Quantity, Price:Price}]->(i);
+
+//set item specific prices and quantities
+MATCH (i:Item)-[c:CONTAINS]-(t:Transaction)
+WITH  i, AVG(c.Price) as Price, count(c) as Num_Sold
+SET i.avg_price=Price, i.num_sold = Num_Sold
+RETURN count(i)
